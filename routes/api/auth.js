@@ -5,7 +5,9 @@ const usersController = require("../../controllers/users");
 const { authenticate, upload } = require("../../middlewares");
 
 router.post("/register", usersController.register);
+router.get("/verify/:verificationCode", usersController.verify);
 router.post("/login", usersController.login);
+router.post("/verify", usersController.resendVerifyEmail)
 router.get("/current", authenticate, usersController.getCurrent);
 router.post("/logout", authenticate, usersController.logout);
 router.patch(

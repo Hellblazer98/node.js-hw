@@ -4,28 +4,33 @@ const { handleMongooseError } = require("../helpers");
 const Joi = require("joi");
 
 const userSchema = new Schema(
-    {
-        password: {
-            type: String,
-            required: [true, 'Password is required'],
-        },
-        email: {
-            type: String,
-            required: [true, 'Email is required'],
-            unique: true,
-        },
-        subscription: {
-            type: String,
-            enum: ["starter", "pro", "business"],
-            default: "starter"
+  {
+    password: {
+      type: String,
+      required: [true, 'Password is required'],
     },
-        avatarURL: String,
-        token: {
-            type: String,
-            default: null,
-        },
+    email: {
+      type: String,
+      required: [true, 'Email is required'],
+      unique: true,
     },
-    { versionKey: false, timestamps: true }
+    subscription: {
+      type: String,
+      enum: ["starter", "pro", "business"],
+      default: "starter"
+    },
+    avatarURL: String,
+    token: {
+      type: String,
+      default: null,
+    },
+    verificationCode: {
+      type: String,
+      required: [true, 'Verify code is required'],
+    },
+  },
+
+  { versionKey: false, timestamps: true }
 );
 
 userSchema.post("save", handleMongooseError);
@@ -56,9 +61,14 @@ const loginSchema = Joi.object({
   token: Joi.string().token(),
 });
 
+const userEmailSchema = Joi.object({
+  email: Joi.string().email().required()
+});
+
 const schemas = {
   signUpSchema,
   loginSchema,
+  userEmailSchema
 };
 
 const User = model("user", userSchema);
