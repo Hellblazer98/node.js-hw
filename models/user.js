@@ -24,6 +24,10 @@ const userSchema = new Schema(
       type: String,
       default: null,
     },
+    verify: {
+      type: Boolean,
+      default: false,
+    },
     verificationCode: {
       type: String,
       required: [true, 'Verify code is required'],
@@ -62,7 +66,12 @@ const loginSchema = Joi.object({
 });
 
 const userEmailSchema = Joi.object({
-  email: Joi.string().email().required()
+  email: Joi.string()
+    .email({
+      minDomainSegments: 2,
+      tlds: { allow: ["com", "net"] },
+    })
+    .required(),
 });
 
 const schemas = {

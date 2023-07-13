@@ -68,23 +68,31 @@ const verify = async (req, res) => {
 
 const resendVerifyEmail = async (req, res) => {
   const { email } = req.body;
-  const { error } = schemas.userEmailSchema.validate(email);
+  const { error } = schemas.userEmailSchema.validate(req.body);
+
   if (error) {
-    throw HttpError(400, "missing required field email");
+    res.status(404).json({
+      message: "missing required field email",
+    });
+    return;
   }
 
   const user = await User.findOne({ email });
   if (!user) {
     throw HttpError(404);
   }
+
   if (user.verify) {
-    throw HttpError(400, "Verification has already been passed");
-  }
+    res.status(400).json({
+      message: "Verification has already been passed",
+    });
+    return
+  };
 
   const verifyEmail = {
     to: email,
     subject: "Verify email",
-    html: `<a target="_blank" href="${PROJECT_URL}/api/auth/verify/${user.verificationCode}">Click to verify email</a>`,
+    html: `<a target="_blank" href="${PROJECT_URL}/users/verify/${user.verificationCode}">Click to verify email</a>`,
   };
 
   await sendEmail(verifyEmail);
@@ -106,6 +114,12 @@ const login = async (req, res, next) => {
     if (!user) {
       throw HttpError(401, "Email or password wrong");
     }
+
+    if (!user.verify) {
+      throw HttpError(401, "Email is not verified");
+    }
+
+    
     const passwordCompare = await bcrypt.compare(password, user.password);
     if (!passwordCompare) {
       throw HttpError(401, "Email or password invalid");
